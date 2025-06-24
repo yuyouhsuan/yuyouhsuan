@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDGs 撿垃圾遊戲 - 第二關</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Beach_background.jpg/1280px-Beach_background.jpg');
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+    #game-area {
+      position: relative;
+      width: 100vw;
+      height: 80vh;
+      overflow: hidden;
+    }
+    .trash {
+      width: 60px;
+      position: absolute;
+      cursor: pointer;
+    }
+    .hand {
+      width: 100px;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #score {
+      text-align: center;
+      font-size: 1.2em;
+      margin: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>第二關：撿垃圾</h1>
+  <div id="score">已撿垃圾：0</div>
+  <div id="game-area">
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="hand" class="hand" id="hand" />
+  </div>
+
+  <script>
+    const gameArea = document.getElementById('game-area');
+    const scoreDisplay = document.getElementById('score');
+    const hand = document.getElementById('hand');
+    let score = 0;
+
+    function createTrash() {
+      if (score >= 10) return;
+      const trash = document.createElement('img');
+      trash.src = 'garbage.jpg'; // ✅ 換成你剛剛提供的圖片檔案名稱
+      trash.className = 'trash';
+      trash.style.top = Math.random() * 60 + 10 + 'vh';
+      trash.style.left = Math.random() * 90 + 'vw';
+      trash.addEventListener('click', () => {
+        score++;
+        scoreDisplay.innerText = '已撿垃圾：' + score;
+        gameArea.removeChild(trash);
+        if (score >= 10) {
+          alert('太棒了！完成第二關！');
+          location.href = 'level3.html'; // 自動前往下一關
+        }
+      });
+      gameArea.appendChild(trash);
+    }
+
+    for (let i = 0; i < 10; i++) {
+      setTimeout(createTrash, i * 500);
+    }
+  </script>
+</body>
+</html>
