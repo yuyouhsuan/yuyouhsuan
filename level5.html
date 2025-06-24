@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第五關：SDGs 拼圖挑戰</title>
+  <style>
+    body {
+      font-family: "微軟正黑體", sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+    #puzzle-container {
+      width: 450px;
+      height: 450px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(3, 150px);
+      grid-template-rows: repeat(3, 150px);
+      gap: 2px;
+      border: 3px solid #1e90ff;
+      background-color: #fff;
+    }
+    .puzzle-piece {
+      width: 150px;
+      height: 150px;
+      background-image: url("sdgs.jpg");
+      background-size: 450px 450px;
+      border: 1px solid #ccc;
+      cursor: grab;
+    }
+    .puzzle-piece.dragging {
+      opacity: 0.6;
+      cursor: grabbing;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 22px;
+      color: green;
+    }
+    #timer {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: red;
+    }
+    #success-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 128, 0, 0.9);
+      color: white;
+      font-size: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+
+<h1>第五關：SDGs 拼圖挑戰</h1>
+<p>拖曳拼圖來還原圖案，在 60 秒內完成挑戰！</p>
+
+<div id="timer">剩餘時間：60 秒</div>
+<div id="puzzle-container"></div>
+<div id="message"></div>
+
+<div id="success-screen">
+  🎉 挑戰成功！<br>
+  你完成了 SDGs 拼圖！
+</div>
+
+<script>
+  const container = document.getElementById('puzzle-container');
+  const message = document.getElementById('message');
+  const timerDisplay = document.getElementById('timer');
+  const successScreen = document.getElementById('success-screen');
+
+  const rows = 3;
+  const cols = 3;
+  const pieceSize = 150;
+  let timeLeft = 60;
+  let timer;
+  let gameOver = false;
+
+  const pieces = Array.from({ length: 9 }, (_, i) => i);
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function initPuzzle() {
+    const shuffled = shuffle([...pieces]);
+    container.innerHTML = '';
+    shuffled.forEach((pos, index) => {
+      const piece = document.createElement('div');
+      piece.classList.add('puzzle-piece');
+      piece.setAttribute('draggable', 'true');
+      piece.dataset.correctIndex = pos;
+      piece.dataset.currentIndex = index;
+
+      const row = Math.floor(pos / cols);
+      const col = pos % cols;
+      piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
+
+      container.appendChild(piece);
+
+      piece.addEventListener('dragstart', dragStart);
+      piece.addEventListener('dragover', dragOver);
+      piece.addEventListener('drop', drop);
+      piece.addEventListener('dragend', dragEnd);
+    });
+
+    startTimer();
+  }
+
+  let dragSrcEl = null;
+
+  function dragStart(e) {
+    dragSrcEl = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function dragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function drop(e) {
+    e.stopPropagation();
+    if (dragSrcEl !== this) {
+      const srcIndex = dragSrcEl.dataset.currentIndex;
+      const tgtIndex = this.dataset.currentIndex;
+
+      dragSrcEl.dataset.currentIndex = tgtIndex;
+      this.dataset.currentIndex = srcIndex;
+
+      // 調整 DOM 順序
+      if (dragSrcEl.nextSibling === this) {
+        container.insertBefore(this, dragSrcEl);
+      } else if (this.nextSibling === dragSrcEl) {
+        container.insertBefore(dragSrcEl, this);
+      } else {
+        container.insertBefore(dragSrcEl, this);
+        container.insertBefore(this, container.children[srcIndex]);
+      }
+
+      checkCompletion();
+    }
+    return false;
+  }
+
+  function dragEnd(e) {
+    this.classList.remove('dragging');
+  }
+
+  function checkCompletion() {
+    let completed = true;
+    const pieces = container.querySelectorAll('.puzzle-piece');
+    pieces.forEach(piece => {
+      if (piece.dataset.currentIndex !== piece.dataset.correctIndex) {
+        completed = false;
+      }
+    });
+
+    if (completed && !gameOver) {
+      clearInterval(timer);
+      message.textContent = '';
+      successScreen.style.display = 'flex';
+      pieces.forEach(p => p.setAttribute('draggable', 'false'));
+      gameOver = true;
+    }
+  }
+
+  function startTimer() {
+    timer = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        timerDisplay.textContent = '時間到！請再接再厲！';
+        disablePuzzle();
+        gameOver = true;
+      }
+    }, 1000);
+  }
+
+  function disablePuzzle() {
+    const pieces = container.querySelectorAll('.puzzle-piece');
+    pieces.forEach(p => p.setAttribute('draggable', 'false'));
+  }
+
+  initPuzzle();
+</script>
+
+</body>
+</html>

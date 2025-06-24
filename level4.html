@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>第四關 - 撿垃圾答題遊戲</title>
+<style>
+  body {
+    font-family: "微軟正黑體", sans-serif;
+    background-color: #eef6f7;
+    padding: 20px;
+    text-align: center;
+  }
+  #trash-container {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  .trash {
+    width: 80px;
+    height: 80px;
+    background-color: #88cc88;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    box-shadow: 0 0 6px #4a7a4a;
+    transition: transform 0.2s;
+  }
+  .trash:hover {
+    transform: scale(1.1);
+  }
+  #question-box {
+    margin-top: 30px;
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #aaa;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #question-box p {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  .answer-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #007acc;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  .answer-btn:hover {
+    background-color: #005f99;
+  }
+  #message {
+    margin-top: 25px;
+    font-size: 22px;
+    color: green;
+  }
+</style>
+</head>
+<body>
+
+<h1>第四關：撿垃圾回答問題</h1>
+<p>撿三個垃圾並答對三次就過關！</p>
+
+<div id="trash-container">
+  <div class="trash" data-id="1">🗑️</div>
+  <div class="trash" data-id="2">🗑️</div>
+  <div class="trash" data-id="3">🗑️</div>
+  <div class="trash" data-id="4">🗑️</div>
+</div>
+
+<div id="question-box" style="display:none;">
+  <p id="question-text"></p>
+  <div id="answers"></div>
+</div>
+
+<div id="message"></div>
+
+<script>
+  const questions = [
+    {
+      question: "哪一種垃圾可以回收？",
+      answers: ["塑膠瓶", "食物", "紙巾", "髒布"],
+      correct: 0
+    },
+    {
+      question: "廚餘應該丟到哪裡？",
+      answers: ["廚餘桶", "一般垃圾桶", "資源回收桶", "有害垃圾桶"],
+      correct: 0
+    },
+    {
+      question: "電池屬於哪種類型的垃圾？",
+      answers: ["有害垃圾", "可回收垃圾", "一般垃圾", "廚餘"],
+      correct: 0
+    },
+    {
+      question: "紙類垃圾回收前要注意什麼？",
+      answers: ["保持乾燥", "弄濕比較好", "隨便丟即可", "剪碎丟垃圾桶"],
+      correct: 0
+    }
+  ];
+
+  const trashElements = document.querySelectorAll('.trash');
+  const questionBox = document.getElementById('question-box');
+  const questionText = document.getElementById('question-text');
+  const answersDiv = document.getElementById('answers');
+  const message = document.getElementById('message');
+
+  let pickedCount = 0;
+  let answerCount = 0;
+  let currentQuestionIndex = null;
+  let canPickTrash = true;
+
+  trashElements.forEach(trash => {
+    trash.addEventListener('click', () => {
+      if(!canPickTrash) return;
+      pickedCount++;
+      canPickTrash = false;
+
+      // 隱藏點過的垃圾
+      trash.style.visibility = 'hidden';
+
+      // 讀取隨機題目
+      currentQuestionIndex = Math.floor(Math.random() * questions.length);
+      showQuestion(questions[currentQuestionIndex]);
+    });
+  });
+
+  function showQuestion(q) {
+    questionText.textContent = q.question;
+    answersDiv.innerHTML = '';
+    questionBox.style.display = 'block';
+    message.textContent = '';
+
+    q.answers.forEach((ans, idx) => {
+      const btn = document.createElement('button');
+      btn.classList.add('answer-btn');
+      btn.textContent = ans;
+      btn.onclick = () => checkAnswer(idx);
+      answersDiv.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected) {
+    if(selected === questions[currentQuestionIndex].correct) {
+      answerCount++;
+      message.style.color = 'green';
+      message.textContent = `答對了！已答對 ${answerCount} 次`;
+
+      // 答對後可以繼續撿垃圾
+      canPickTrash = true;
+      questionBox.style.display = 'none';
+
+      if(answerCount >= 3) {
+        message.textContent = "恭喜過關！你已成功回答三次問題並撿了三個垃圾！🎉";
+        // 你可以這裡加上過關事件，比如跳頁或按鈕
+        trashElements.forEach(t => t.style.pointerEvents = 'none');
+      }
+    } else {
+      message.style.color = 'red';
+      message.textContent = "答錯了，請再試一次！";
+    }
+  }
+</script>
+
+</body>
+</html>
